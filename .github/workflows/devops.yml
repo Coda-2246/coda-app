@@ -1,0 +1,46 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy to Heroku (Dev)
+        if: github.ref == 'refs/heads/dev'
+        uses: akhileshns/heroku-deploy@v3.12.13
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME_DEV }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+
+      - name: Run DB Migrations (Dev)
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          heroku run rails db:migrate --app ${{ secrets.HEROKU_APP_NAME_DEV }}
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+
+      - name: Deploy to Heroku (Production)
+        if: github.ref == 'refs/heads/master'
+        uses: akhileshns/heroku-deploy@v3.12.13
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME_PROD }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+
+      - name: Run DB Migrations (Production)
+        if: github.ref == 'refs/heads/master'
+        run: |
+          heroku run rails db:migrate --app ${{ secrets.HEROKU_APP_NAME_PROD }}
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
