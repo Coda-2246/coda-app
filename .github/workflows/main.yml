@@ -23,6 +23,13 @@ jobs:
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME_DEV }}
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
       
+      - name: Run DB Migrations (Dev)
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          heroku run rails db:migrate --app ${{ secrets.HEROKU_APP_NAME_DEV }}
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      
       - name: Deploy to Heroku (Production)
         if: github.ref == 'refs/heads/master'
         uses: akhileshns/heroku-deploy@v3.12.13
@@ -30,3 +37,11 @@ jobs:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME_PROD }}
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
+      
+      - name: Run DB Migrations (Production)
+        if: github.ref == 'refs/heads/master'
+        run: |
+          heroku run rails db:migrate --app ${{ secrets.HEROKU_APP_NAME_PROD }}
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+
